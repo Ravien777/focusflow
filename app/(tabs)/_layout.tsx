@@ -1,32 +1,41 @@
-import { Tabs } from "expo-router";
+import { useEffect } from "react";
+import { Tabs, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context"; // ✅ Import this
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useStore } from "../../src/store/useStore";
+import { useTheme } from "../../src/theme";
 
 export default function TabLayout() {
-  // 1. Detect the system navigation height (0 on old phones, ~20-40 on new ones)
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const theme = useTheme(useStore((s) => s.theme));
+  const hasOnboarded = useStore((s) => s.hasOnboarded);
+  const isLoading = useStore((s) => s.isLoading);
+
+  useEffect(() => {
+    if (!isLoading && !hasOnboarded) {
+      router.replace("/onboarding");
+    }
+  }, [hasOnboarded, isLoading]);
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "#000",
-          borderTopColor: "#222",
-          // 2. Dynamically adjust height & padding to sit ABOVE system buttons
+          backgroundColor: theme.tabBarBg,
+          borderTopColor: theme.tabBarBorder,
           height: 60 + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: 8,
-          // Ensure the bar stays at the very bottom
           position: "absolute",
           bottom: 0,
           left: 0,
           right: 0,
-          elevation: 0, // Removes default Android shadow for flatter look
+          elevation: 0,
         },
-        tabBarActiveTintColor: "#3B82F6",
-        tabBarInactiveTintColor: "#888",
-        // 3. Adjust label/icon positioning for the larger touch area
+        tabBarActiveTintColor: theme.accent,
+        tabBarInactiveTintColor: theme.textMuted,
         tabBarLabelStyle: { fontSize: 12, fontWeight: "600", marginBottom: 4 },
         tabBarIconStyle: { marginTop: 4 },
       }}
@@ -46,6 +55,15 @@ export default function TabLayout() {
           title: "Timer",
           tabBarIcon: ({ color }) => (
             <Ionicons name="timer-outline" size={26} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="stats"
+        options={{
+          title: "Stats",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="stats-chart-outline" size={26} color={color} />
           ),
         }}
       />

@@ -4,8 +4,31 @@
     "slug": "focusflow",
     "scheme": "focusflow",
     "newArchEnabled": true,
-    "ios": { "bundleIdentifier": "com.focusflow.app" },
+    "ios": {
+      "bundleIdentifier": "com.focusflow.app",
+      "infoPlist": {
+        "NSCalendarsUsageDescription": "FocusFlow needs calendar access for scheduling",
+        "NSRemindersUsageDescription": "FocusFlow needs reminders for daily check-ins"
+      }
+    },
     "android": { "package": "com.focusflow.app" },
-    "plugins": ["expo-router"]
+    "plugins": [
+      "expo-router",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#3B82F6"
+        }
+      ],
+      [
+        "react-native-purchases",
+        {
+          "ios": {
+            "appDelegateProxyEnabled": true
+          }
+        }
+      ]
+    ]
   }
 }

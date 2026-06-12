@@ -1,38 +1,51 @@
-// ✅ PURE MOCK IMPLEMENTATION - Works in Expo Go
-// When you switch to a dev build, we'll replace this with the real expo-notifications code
+import * as Notifications from "expo-notifications";
+import { Platform } from "react-native";
 
-import { Alert } from "react-native";
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
-// Mock: No-op for Android channels
 export async function setupNotificationChannels() {
-  console.log("🔔 [Mock] Notification channels setup skipped (Expo Go)");
+  if (Platform.OS === "android") {
+    await Notifications.setNotificationChannelAsync("daily-reminder", {
+      name: "Daily Reminder",
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 200, 100, 200],
+    });
+  }
 }
 
-// Mock: Auto-approve permissions
-export async function requestNotificationPermission() {
-  return true;
+export async function requestNotificationPermission(): Promise<boolean> {
+  const { status: existing } = await Notifications.getPermissionsAsync();
+  if (existing === "granted") return true;
+
+  const { status } = await Notifications.requestPermissionsAsync();
+  return status === "granted";
 }
 
-// Mock: Show alert instead of scheduling real notification
 export async function scheduleDailyReminder(hour: number, minute: number) {
-  const formattedTime = `${hour}:${String(minute).padStart(2, "0")}`;
+  await Notifications.cancelAllScheduledNotificationsAsync();
 
-  Alert.alert(
-    "🔔 Mock Reminder Scheduled",
-    `In a real build, FocusFlow would notify you daily at ${formattedTime}\n\n✅ Your reminder preferences are saved and will work automatically when you create a development build.`,
-    [{ text: "Got it", style: "default" }],
-  );
-  return true;
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "FocusFlow Reminder",
+      body: "Time to check in on your habits!",
+      sound: "default",
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
+      hour,
+      minute,
+    } as Notifications.DailyTriggerInput,
+  });
 }
 
-// Mock: Show confirmation alert
 export async function cancelAllReminders() {
-  Alert.alert(
-    "🗑️ Mock Reminder Cancelled",
-    "Notifications disabled. This will work with real system notifications in a development build.",
-    [{ text: "OK" }],
-  );
+  await Notifications.cancelAllScheduledNotificationsAsync();
 }
-
-// Helper for UI: Always true in mock mode
-export const isLikelyMockMode = async (): Promise<boolean> => true;
